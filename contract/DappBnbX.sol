@@ -92,12 +92,74 @@ contract DappBnbx is Ownable, ReentrancyGuard  {
 
     }
 
-    function currentTime() internal view returns(uint256) {
-        return (block.timestamp * 1000) + 1000;
+    
+    function updateApartment(
+        uint id,
+        string memory name,
+        string memory description,
+        string memory location,
+        string memory images,
+        uint rooms,
+        uint price
+    ) public {
+        require(appartmentExist[id], 'Appartment not found');
+        require(msg.sender == apartments[id].owner, 'Unauthorized entity');
+        require(bytes(name).length > 0, 'Name cannot be empty');
+        require(bytes(description).length > 0, 'Description cannot be empty');
+        require(bytes(location).length > 0, 'Location cannot be empty');
+        require(bytes(images).length > 0, 'Images cannot be empty');
+        require(rooms > 0, 'Rooms cannot be zero');
+        require(price > 0 ether, 'Price cannot be zero');
+
+        ApartmentStruct memory apartment = apartments[id];
+        apartment.name = name;
+        apartment.description = description;
+        apartment.location = location;
+        apartment.images = images;
+        apartment.rooms = rooms;
+        apartment.price = price;
+
+        apartments[apartment.id] = apartment;
     }
 
 
+    function updateApartment(
+        uint id
+    ) public {
+        require(appartmentExist[id], 'Appartment not found');
+        require(msg.sender == apartments[id].owner, 'Unauthorized entity');
+    
+        appartmentExist[id] = false;
+        apartments[id].deleted = true;
+    }
+
+    function getApartment(uint id) public view returns (ApartmentStruct memory) {
+        return apartments[id];
+    }
+
+    
+
+    function getApartments() public view returns (ApartmentStruct[] memory Apartments) {
+        uint256 available;
+        for (uint i = 1; i <= _totalAppartments.current(); i++) {
+            if (!apartments[i].deleted) available++;
+        }
+
+        Apartments = new ApartmentStruct[](available);
+
+        uint256 index;
+        for (uint i = 1; i <= _totalAppartments.current(); i++) {
+            if (!apartments[i].deleted) {
+                Apartments[index++] = apartments[i];
+            }
+        }
+    }
+    
 
 
+
+    function currentTime() internal view returns(uint256) {
+        return (block.timestamp * 1000) + 1000;
+    }
 
 }
