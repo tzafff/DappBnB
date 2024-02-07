@@ -9,3 +9,4 @@ export const globalSlices = createSlice({
 
 export const globalActions = globalSlices.actions
 export default globalSlices.reducer
+
