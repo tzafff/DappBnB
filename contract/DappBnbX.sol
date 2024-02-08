@@ -155,7 +155,39 @@ contract DappBnbx is Ownable, ReentrancyGuard  {
         }
     }
     
+    function bookApartment(uint aid, uint[] memory dates) public payable {
+        uint totalPrice = apartments[aid].price * dates.length;
+        uint totalSecurityFee = totalPrice * securityFee / 100;
+        require(appartmentExist[aid], "Apartment not found!");
+        require(msg.value >= (totalPrice + totalSecurityFee) , "Insufficient funds");
+        require(datesCleared(aid, dates), "One or more dates not available");
 
+        for(uint i = 0; i < dates.length; i++) {
+            BookingStruct memory booking;
+            booking.id = bookingsOf[aid].length;
+            booking.aid = aid;
+            booking.tenant = msg.sender;
+            booking.date = dates[i];
+            booking.price = apartments[aid].price;
+
+            bookingsOf[aid].push(booking);
+            isDateBooked[aid][dates[i]] = true;
+            hasBooked[msg.sender][dates[i]] = true;
+            bookedDates[aid].push(dates[i]);
+        }
+    }   
+
+    function datesCleared(uint aid, uint[] memory dates) internal view returns(bool) {
+        bool dateNotUsed = true;
+
+        for(uint i = 0; i < dates.length; i++) {
+            for(uint j = 0; j < dates.length; i++) {
+                if(dates[i] == bookedDates[aid][j]) {
+                    dateNotUsed = false;
+                }
+            }
+        }
+    }
 
 
     function currentTime() internal view returns(uint256) {
