@@ -172,10 +172,25 @@ contract DappBnbx is Ownable, ReentrancyGuard  {
 
             bookingsOf[aid].push(booking);
             isDateBooked[aid][dates[i]] = true;
-            hasBooked[msg.sender][dates[i]] = true;
             bookedDates[aid].push(dates[i]);
         }
     }   
+
+    function checkInApartment(uint aid, uint bookingId) public nonReentrant(){
+        BookingStruct memory booking = bookingsOf[aid][bookingId];
+        require(msg.sender == booking.tenant, "Unauthorized Enitity");
+        require(!booking.checked, "Double checking not allowed");
+
+        bookingsOf[aid][bookingId].checked = true;
+        hasBooked[msg.sender][booking.date] = true;
+
+        uint tax = (booking.price * taxPercent) / 100;
+        uint fee = (booking.price * securityFee) / 100;
+
+        payTo(apartments[aid].owner, booking.price - tax);
+        payTo(owner(),tax);
+        payTo(booking.tenant ,fee);
+    }
 
     function datesCleared(uint aid, uint[] memory dates) internal view returns(bool) {
         bool dateNotUsed = true;
@@ -187,8 +202,13 @@ contract DappBnbx is Ownable, ReentrancyGuard  {
                 }
             }
         }
+        return dateNotUsed;
     }
 
+    function payTo(address to, uint256 amount) internal {
+        (bool success,) = payable(to).call{value: amount}('');
+        require(success);
+    }
 
     function currentTime() internal view returns(uint256) {
         return (block.timestamp * 1000) + 1000;
