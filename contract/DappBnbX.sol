@@ -179,7 +179,7 @@ contract DappBnbx is Ownable, ReentrancyGuard  {
     function checkInApartment(uint aid, uint bookingId) public nonReentrant(){
         BookingStruct memory booking = bookingsOf[aid][bookingId];
         require(msg.sender == booking.tenant, "Unauthorized Enitity");
-        require(!booking.checked, "Double checking not allowed");
+        require(!booking.checked, "Already checked in!");
 
         bookingsOf[aid][bookingId].checked = true;
         hasBooked[msg.sender][booking.date] = true;
@@ -190,6 +190,32 @@ contract DappBnbx is Ownable, ReentrancyGuard  {
         payTo(apartments[aid].owner, booking.price - tax);
         payTo(owner(),tax);
         payTo(booking.tenant ,fee);
+    }
+
+    function refundBooking(uint aid, uint bookingId) public nonReentrant() {
+        BookingStruct memory booking = bookingsOf[aid][bookingId];
+        require(!booking.checked, "Already checked in!");
+        require(isDateBooked[aid][booking.date], "Date not booked");
+
+        if(msg.sender != owner()) {
+            require(msg.sender == booking.tenant, "Unothaurized Entity");
+            require(booking.date > currentTime(), "Not allowed, exceeded booking date");
+        }
+        bookingsOf[aid][bookingId].cancelled = true;
+        isDateBooked[aid][booking.date] = false;
+
+        uint lastIndex = bookedDates[aid].length - 1;
+        uint lastBooking = bookedDates[aid][lastIndex];
+
+        bookedDates[aid][bookingId] = lastBooking;
+        bookedDates[aid].pop();
+
+        uint fee = (booking.price * securityFee) / 100;
+        uint collateral = fee / 2;
+
+        payTo(apartments[aid].owner, booking.price - collateral);
+        payTo(owner(),collateral);
+        payTo(booking.tenant ,booking.price);
     }
 
     function datesCleared(uint aid, uint[] memory dates) internal view returns(bool) {
