@@ -52,6 +52,25 @@ const getBookings = async (id) => {
   return structuredBookings(bookings)
 }
 
+const getQualifiedReviewers = async (id) => {
+  const contract = await getEthereumContracts()
+  const reviewers = await contract.getQualifiedReviewers(id)
+  return reviewers
+}
+
+const getBookedDates = async (id) => {
+  const contract = await getEthereumContracts()
+  const bookings = await contract.getUnavailableDates(id)
+  const timestamps = bookings.map((timestamp) => Number(timestamp))
+  return timestamps
+}
+
+const getSecurityFee = async () => {
+  const contract = await getEthereumContracts()
+  const fee = await contract.securityFee()
+  return Number(fee)
+}
+
 const structuredBookings = (bookings) =>
   bookings
     .map((booking) => ({
@@ -95,4 +114,12 @@ const structureAppartments = (appartments) =>
     }))
     .sort((a, b) => b.timestamp - a.timestamp)
 
-export {getApartments, getApartment, getReviews, getBookings}
+export {getApartments,
+  getApartment,
+  getReviews,
+  getBookings,
+  getQualifiedReviewers,
+  getBookedDates,
+  getSecurityFee,
+
+}

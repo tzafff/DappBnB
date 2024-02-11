@@ -3,7 +3,13 @@ import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
 import { generateFakeApartment, generateFakeReviews } from '@/utils/fakeData'
 import { Title, ImageGrid, Description, Calendar, Actions, Review, AddReview } from '@/components'
-import {getApartment, getReviews} from "../../services/blockchain";
+import {
+  getApartment,
+  getBookedDates,
+  getQualifiedReviewers,
+  getReviews,
+  getSecurityFee
+} from "../../services/blockchain";
 
 export default function Room({
   apartmentData,
@@ -71,10 +77,10 @@ export default function Room({
 export const getServerSideProps = async (context) => {
   const { roomId } = context.query
   const apartmentData = await getApartment(roomId)
-  const timestampsData = []
-  const qualifiedReviewers = []
+  const timestampsData = await getBookedDates(roomId)
+  const qualifiedReviewers = await getQualifiedReviewers(roomId)
   const reviewsData = await getReviews(roomId)
-  const securityFee = 5
+  const securityFee = await getSecurityFee()
 
   return {
     props: {
