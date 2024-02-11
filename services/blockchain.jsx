@@ -165,6 +165,24 @@ const structureAppartments = (appartments) =>
     }))
     .sort((a, b) => b.timestamp - a.timestamp)
 
+const deleteApartment = async (id) => {
+    if (!ethereum) {
+        reportError('Please install a browser provider')
+        return Promise.reject(new Error('Browser provider not installed'))
+    }
+
+    try {
+        const contract = await getEthereumContracts()
+        tx = await contract.deleteApartment(id)
+
+        await tx.wait()
+        return Promise.resolve(tx)
+    } catch (error) {
+        reportError(error)
+        return Promise.reject(error)
+    }
+}
+
 export {
   getApartment,
   getApartments,
@@ -175,6 +193,5 @@ export {
   getSecurityFee,
   updateApartment,
   createApartment,
-
-
+  deleteApartment,
 }
