@@ -183,6 +183,8 @@ const deleteApartment = async (id) => {
     }
 }
 
+
+
 export {
   getApartment,
   getApartments,
