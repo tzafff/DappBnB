@@ -97,6 +97,31 @@ const updateApartment = async (apartment) => {
     }
 }
 
+const createApartment = async (apartment) => {
+    if (!ethereum) {
+        reportError('Please install a browser provider')
+        return Promise.reject(new Error('Browser provider not installed'))
+    }
+
+    try {
+        const contract = await getEthereumContracts()
+        tx = await contract.createApartment(
+            apartment.name,
+            apartment.description,
+            apartment.location,
+            apartment.images,
+            apartment.rooms,
+            toWei(apartment.price)
+        )
+
+        await tx.wait()
+        return Promise.resolve(tx)
+    } catch (error) {
+        reportError(error)
+        return Promise.reject(error)
+    }
+}
+
 const structuredBookings = (bookings) =>
   bookings
     .map((booking) => ({
@@ -140,13 +165,16 @@ const structureAppartments = (appartments) =>
     }))
     .sort((a, b) => b.timestamp - a.timestamp)
 
-export {getApartments,
+export {
   getApartment,
+  getApartments,
   getReviews,
   getBookings,
   getQualifiedReviewers,
   getBookedDates,
   getSecurityFee,
   updateApartment,
+  createApartment,
+
 
 }
