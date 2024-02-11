@@ -3,6 +3,7 @@ import { generateFakeApartment } from '@/utils/fakeData'
 import { Category, Collection } from '@/components'
 import {getApartments} from "@/services/blockchain";
 
+
 export default function Home({ apartmentsData }) {
   return (
     <div>

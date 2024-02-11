@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers } from 'ethers'
 import address from '@/contracts/contractAddress.json';
 import abi from '@/artifacts/contracts/DappBnbX.sol/DappBnbX.json';
 import { globalActions } from '@/store/globalSlices';
@@ -71,6 +71,32 @@ const getSecurityFee = async () => {
   return Number(fee)
 }
 
+const updateApartment = async (apartment) => {
+    if (!ethereum) {
+        reportError('Please install a browser provider')
+        return Promise.reject(new Error('Browser provider not installed'))
+    }
+
+    try {
+        const contract = await getEthereumContracts()
+        tx = await contract.updateApartment(
+            apartment.id,
+            apartment.name,
+            apartment.description,
+            apartment.location,
+            apartment.images,
+            apartment.rooms,
+            toWei(apartment.price)
+        )
+
+        await tx.wait()
+        return Promise.resolve(tx)
+    } catch (error) {
+        reportError(error)
+        return Promise.reject(error)
+    }
+}
+
 const structuredBookings = (bookings) =>
   bookings
     .map((booking) => ({
@@ -121,5 +147,6 @@ export {getApartments,
   getQualifiedReviewers,
   getBookedDates,
   getSecurityFee,
+  updateApartment,
 
 }
