@@ -8,6 +8,7 @@ const  toWei = (num) => ethers.parseEther(num.toString());
 const fromWei = (num) => ethers.formatEther(num);
 
 let ethereum, tx;
+const { setTimestamps, setBookings, setReviews } = globalActions
 
 if(typeof window !== 'undefined') ethereum = window.ethereum;
 
@@ -183,7 +184,48 @@ const deleteApartment = async (id) => {
     }
 }
 
+const bookApartment = async ({aid, timestamps, amount}) => {
+    if (!ethereum) {
+        reportError('Please install a browser provider')
+        return Promise.reject(new Error('Browser provider not installed'))
+    }
 
+    try {
+        const contract = await getEthereumContracts()
+        tx = await contract.bookApartment(aid, timestamps, {value: toWei(amount)})
+        await tx.wait()
+        const bookings = await getBookedDates(aid)
+
+        store.dispatch(setBookings(bookings))
+
+        return Promise.resolve(tx)
+    } catch (error) {
+        reportError(error)
+        return Promise.reject(error)
+    }
+}
+
+
+const checkInApartment = async (aid, bookingId) => {
+    if (!ethereum) {
+        reportError('Please install a browser provider')
+        return Promise.reject(new Error('Browser provider not installed'))
+    }
+
+    try {
+        const contract = await getEthereumContracts()
+        tx = await contract.checkInApartment(aid, bookingId)
+
+        await tx.wait()
+        const bookings = await getBookings(aid)
+
+        store.dispatch(setBookings(bookings))
+        return Promise.resolve(tx)
+    } catch (error) {
+        reportError(error)
+        return Promise.reject(error)
+    }
+}
 
 export {
   getApartment,
@@ -196,4 +238,7 @@ export {
   updateApartment,
   createApartment,
   deleteApartment,
+    bookApartment,
+    checkInApartment
+
 }
