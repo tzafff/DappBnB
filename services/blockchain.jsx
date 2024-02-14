@@ -227,6 +227,50 @@ const checkInApartment = async (aid, bookingId) => {
     }
 }
 
+
+const refundBooking = async (aid, bookingId) => {
+    if (!ethereum) {
+        reportError('Please install a browser provider')
+        return Promise.reject(new Error('Browser provider not installed'))
+    }
+
+    try {
+        const contract = await getEthereumContracts()
+        tx = await contract.refundBooking(aid, bookingId)
+
+        await tx.wait()
+        const bookings = await getBookings(aid)
+
+        store.dispatch(setBookings(bookings))
+        return Promise.resolve(tx)
+    } catch (error) {
+        reportError(error)
+        return Promise.reject(error)
+    }
+}
+
+
+const claimFunds = async (aid, bookingId) => {
+    if (!ethereum) {
+        reportError('Please install a browser provider')
+        return Promise.reject(new Error('Browser provider not installed'))
+    }
+
+    try {
+        const contract = await getEthereumContracts()
+        tx = await contract.claimFunds(aid, bookingId)
+
+        await tx.wait()
+        const bookings = await getBookings(aid)
+
+        store.dispatch(setBookings(bookings))
+        return Promise.resolve(tx)
+    } catch (error) {
+        reportError(error)
+        return Promise.reject(error)
+    }
+}
+
 export {
   getApartment,
   getApartments,
@@ -239,6 +283,8 @@ export {
   createApartment,
   deleteApartment,
     bookApartment,
-    checkInApartment
+    checkInApartment,
+    refundBooking,
+    claimFunds
 
 }
