@@ -271,6 +271,27 @@ const claimFunds = async (aid, bookingId) => {
     }
 }
 
+const addReview = async (aid, comment) => {
+    if (!ethereum) {
+        reportError('Please install a browser provider')
+        return Promise.reject(new Error('Browser provider not installed'))
+    }
+
+    try {
+        const contract = await getEthereumContracts()
+        tx = await contract.addReview(aid, comment)
+
+        await tx.wait()
+        const reviews = await getReviews(aid)
+
+        store.dispatch(setReviews(reviews))
+        return Promise.resolve(tx)
+    } catch (error) {
+        reportError(error)
+        return Promise.reject(error)
+    }
+}
+
 export {
   getApartment,
   getApartments,
@@ -285,6 +306,7 @@ export {
     bookApartment,
     checkInApartment,
     refundBooking,
-    claimFunds
+    claimFunds,
+    addReview
 
 }

@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { FaTimes } from 'react-icons/fa'
-import {useDispatch, useSelector} from "react-redux";
-import {globalActions} from "../store/globalSlices";
+import { useDispatch, useSelector } from 'react-redux'
+import { globalActions } from '@/store/globalSlices'
+import { addReview } from '@/services/blockchain'
 
 const AddReview = ({ roomId }) => {
-  const [reviewText, setReviewText] = useState('')
+  const [comment, setComment] = useState('')
   const { reviewModal } = useSelector((states) => states.globalStates)
   const dispatch = useDispatch()
   const { setReviewModal } = globalActions
@@ -15,87 +16,88 @@ const AddReview = ({ roomId }) => {
   }
 
   const resetForm = () => {
-    setReviewText('')
+    setComment('')
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!reviewText) return
+    if (!comment) return
 
     await toast.promise(
-      new Promise(async (resolve, reject) => {
-        // await addReview(roomId, reviewText)
-        //   .then(async (tx) => {
-        //     dispatch(setReviewModal('scale-0'))
-        //     resetForm()
-        //     resolve(tx)
-        //   })
-        //   .catch(() => reject())
-      }),
-      {
-        pending: 'Approve transaction...',
-        success: 'Review submitted successfully 👌',
-        error: 'Encountered error 🤯',
-      }
+        new Promise(async (resolve, reject) => {
+          await addReview(roomId, comment)
+              .then((tx) => {
+                console.log(tx);
+                closeModal()
+                resetForm()
+                resolve(tx)
+              })
+              .catch(() => reject())
+        }),
+        {
+          pending: 'Approve transaction...',
+          success: 'Review submitted successfully 👌',
+          error: 'Encountered error 🤯',
+        }
     )
   }
 
   return (
-    <div
-      className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center
+      <div
+          className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center
       bg-black bg-opacity-50 transform z-[3000] transition-transform duration-300 ${reviewModal}`}
-    >
-      <div className="bg-white shadow-lg shadow-slate-900 rounded-xl w-11/12 md:w-2/5 h-7/12 p-6">
-        <form className="flex flex-col" onSubmit={handleSubmit}>
-          <div className="flex flex-row justify-between items-center">
-            <p className="font-semibold">Add a review today</p>
-            <button
-              type="button"
-              className="border-0 bg-transparent focus:outline-none"
-              onClick={closeModal}
-            >
-              <FaTimes className="text-gray-400" />
-            </button>
-          </div>
-
-          <div className="flex flex-col justify-center items-center rounded-xl mt-5">
-            <div
-              className="flex justify-center items-center rounded-full overflow-hidden
-              h-10 w-40 shadow-md shadow-slate-300 p-4"
-            >
-              <p className="text-lg font-bold text-slate-700"> DappBnB</p>
+      >
+        <div className="bg-white shadow-lg shadow-slate-900 rounded-xl w-11/12 md:w-2/5 h-7/12 p-6">
+          <form className="flex flex-col" onSubmit={handleSubmit}>
+            <div className="flex flex-row justify-between items-center">
+              <p className="font-semibold">Add a review today</p>
+              <button
+                  type="button"
+                  className="border-0 bg-transparent focus:outline-none"
+                  onClick={closeModal}
+              >
+                <FaTimes className="text-gray-400" />
+              </button>
             </div>
-          </div>
 
-          <div
-            className="flex flex-row justify-between items-center
+            <div className="flex flex-col justify-center items-center rounded-xl mt-5">
+              <div
+                  className="flex justify-center items-center rounded-full overflow-hidden
+              h-10 w-40 shadow-md shadow-slate-300 p-4"
+              >
+                <p className="text-lg font-bold text-slate-700"> DappBnB</p>
+              </div>
+            </div>
+
+            <div
+                className="flex flex-row justify-between items-center
           border border-gray-300 p-2 rounded-xl mt-5"
-          >
+            >
             <textarea
-              className="block w-full text-sm resize-none
+                className="block w-full text-sm resize-none
                 text-slate-500 bg-transparent border-0
                 focus:outline-none focus:ring-0 h-14"
-              type="text"
-              name="comment"
-              placeholder="Drop your review..."
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              required
+                type="text"
+                name="comment"
+                placeholder="Drop your review..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                required
             ></textarea>
-          </div>
+            </div>
 
-          <button
-            type="submit"
-            className="flex flex-row justify-center items-center w-full text-white text-md
+            <button
+                type="submit"
+                className="flex flex-row justify-center items-center w-full text-white text-md
             bg-[#ff385c] py-2 px-5 rounded-full drop-shadow-xl border
             focus:outline-none focus:ring mt-5"
-          >
-            Submit
-          </button>
-        </form>
+            >
+              Submit
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
   )
 }
 
